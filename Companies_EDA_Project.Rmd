@@ -1,0 +1,95 @@
+---
+title: "Companies_EDA_Project"
+author: "Alvin Kinoti"
+date: "2023-11-20"
+output: 
+---
+
+# 1000 COMPANIES EDA ANALYSIS REPORT
+
+## Selecting the data 
+
+```{r}
+df <- read.csv("D:/Data Projects/Practice Files/1000_Companies.csv")
+df
+```
+## Cleaning the data 
+```{r}
+sum(is.na.data.frame(df))
+```
+```{r}
+df1 <- df[-4]
+```
+
+### Checking for outliers using a boxplot 
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+
+
+ggplot(data = df1, aes(x= Marketing.Spend, y=Profit ))+
+  geom_boxplot()+
+  labs(x= "Marketing.Spend", y = "Profit")+
+  ggtitle("Marketing Expenditure and Profit")
+```
+
+
+```{r}
+df$Profit[df$Profit%in% boxplot.stats(df$Profit)$out]  
+View(df)
+```
+### Removing the outliers
+
+```{r}
+df <- df[! df$Profit %in% boxplot.stats(df$Profit)$out, ]
+df
+```
+
+## Data Visualization
+### Histogram
+#### Interpretation : the most profit is realized between 150000 and 200000.
+
+```{r}
+ggplot(data = df, aes(x = Profit))+
+  geom_histogram(fill = "green", color = "black")+
+  labs(x= "Profit", y = "Frequency")+
+  ggtitle(" Profit Histogram")
+```
+### Line graph
+#### Interpretation : there is a strong correlation between the Marketing Expenditure and Profit.
+
+```{r}
+ggplot(data = df, aes(x= Marketing.Spend, y = Profit))+
+  geom_line(color = "red")+
+  labs(x = "Marketing Spend", y = "Profit")+
+  ggtitle("Marketing Spend vs Profit")
+```
+
+### Correlation
+#### Marketing Expenditure and Profit
+##### there is an almost perfect positive correlation between the Marketing Expenditure and Profit
+
+```{r}
+cor(df$Marketing.Spend, df$Profit)
+```
+
+#### R.D Spend and Profit
+##### there is an almost perfect positive correlation between the R.D Spend and Profit
+
+```{r}
+cor.test(df$R.D.Spend, df$Profit)
+```
+#### Administration and Profit
+##### There is a positive correlation between Administration and Profit
+
+```{r}
+cor.test(df$Administration, df$Profit)
+```
+
+
+
+
+
+
