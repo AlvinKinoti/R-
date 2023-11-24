@@ -1,0 +1,237 @@
+---
+title: "Alvin Week 3 Assignment"
+author: "Alvin Kinoti"
+date: "2023-11-17"
+output: github_document
+---
+
+ 
+# 1. Operators:
+## a. Create a vector `x` with values 1 to 10. Generate a new vector `y` where each element is the square of the corresponding element in `x` minus twice the element itself.
+
+```{r}
+x <- 1:10
+
+y <- x^2 - 2*x
+cat("Vector x:", x, "\n")
+cat("Vector y:", y, "\n")
+
+```
+b. Given a vector `grades` representing exam scores, create a new vector `pass` that indicates whether each student passed (scored 50 or above) or failed.
+
+```{r}
+grades <- c(10, 50, 30 , 85, 50, 80, 40, 65, 55, 90)
+
+pass <- ifelse(grades >= 50, "Pass", "Fail")
+
+cat("Grades:", grades, "\n")
+cat("Pass:", pass, "\n")
+```
+
+# 2. ggplot:
+## a. Utilize the `mpg` dataset in ggplot to create a scatter plot comparing highway mileage (`hwy`) and city mileage (`cty`). Add color differentiation to the points in the scatter plot based on the class of the vehicle.
+
+```{r}
+library(ggplot2)
+library(dbplyr)
+library(tidyverse)
+attach(mpg)
+View(mpg)
+
+ggplot(data = mpg, aes(x = hwy, y = cty))+
+  geom_point(color = "red") +
+  labs(x = "Highway Mileage", y = "City Mileage")+
+  ggtitle("Highway Mileage vs City Mileage")
+```
+ ## b. Utilize the `iris` dataset to create a faceted plot comparing the distributions of sepal length (`Sepal.Length`) for each species. Ensure the plots have proper labels and a main title.
+ 
+```{r}
+attach(iris)
+View(iris)
+
+ggplot(iris, aes(x = Sepal.Length)) +
+  geom_density(fill = "brown", color = "green") +
+  facet_wrap(~Species, scales = "free_y") +
+  labs(
+    title = "Distribution of Sepal Length by Species",
+    x = "Sepal Length",
+    y = "Density",
+    caption = "Source: Iris dataset"
+  )
+```
+ 
+```
+# 3. Loops
+## a. Write a function to generate the first 10 numbers in the Fibonacci sequence. Use a loop to print each number
+
+```{r}
+fibonacci_sequence <- function(n) {
+  fib <- numeric(n)
+  fib[1] <- 0
+  fib[2] <- 1
+  
+  for (i in 3:n) {
+    fib[i] <- fib[i - 1] + fib[i - 2]
+  }
+  
+  return(fib)
+}
+
+
+for (num in fibonacci_sequence(10)) {
+  cat(num, " ")
+}
+
+```
+
+
+# b. Create two matrices `A` (2x3) and `B` (3x2) filled with random values. Write a loop to multiply these matrices and store the result in a new matrix `C`.
+
+```{r}
+
+set.seed(456)
+
+X <- matrix(runif(3 * 4), nrow = 3, ncol = 4)
+
+
+Y <- matrix(runif(4 * 2), nrow = 4, ncol = 2)
+
+
+Z <- matrix(0, nrow = nrow(X), ncol = ncol(Y))
+
+for (i in 1:nrow(X)) {
+  for (j in 1:ncol(Y)) {
+    for (k in 1:ncol(X)) {
+      Z[i, j] <- Z[i, j] + X[i, k] * Y[k, j]
+    }
+  }
+}
+
+
+cat("Matrix X:\n", X, "\n")
+cat("Matrix Y:\n", Y, "\n")
+cat("Matrix Z (Result of X * Y):\n", Z, "\n")
+
+```
+
+# 4. Functions:
+## a. Write a recursive function to calculate the factorial of a given positive integer.
+
+```{r}
+factorial <- function(n) {
+  if (n == 0 || n == 1) {
+    return(1)
+  } else {
+    return(n * factorial(n - 1))
+  }
+}
+
+n <- 6
+result <- factorial(n)
+
+cat("The factorial of", n, "is", result, "\n")
+```
+
+## b. Develop a function that takes an integer as input and returns a Boolean indicating whether it is a prime number or not.
+
+```{r}
+is_prime <- function(x) {
+  if (x <= 1) {
+    return(FALSE)  
+  }
+  
+  for (i in 2:sqrt(x)) {
+    if (x %% i == 0) {
+      return(FALSE)  
+    }
+  }
+  
+  return(TRUE)  
+}
+
+# For Instance
+num <- 23
+result <- is_prime(num)
+
+cat("Is", num, "a prime number?", result, "\n")
+```
+
+
+# 5. R Markdown:
+## a. Create an R Markdown document that loads a dataset of your choice, performs some exploratory data analysis, and generates visualizations using ggplot. 
+
+### Loading the dataset
+```{r}
+
+
+df <- read.csv("D:/Data Projects/Bounty Analytica/R/1000_Companies.csv")
+View(df)
+
+summary(df)
+tail(df)
+head(df)
+
+```
+
+### Detecting the oultiers in the Profit Column
+
+```{r}
+df$Profit[df$Profit %in% boxplot.stats(df$Profit)$out]
+View(df)
+```
+
+### Removing the outliers in the Profit Column
+
+```{r}
+df <- df[! df$Profit %in% boxplot.stats(df$Profit)$out, ]
+df
+```
+
+## Visualizing the data
+### Histogram
+
+```{r}
+ggplot(data = df, aes(x = Profit)) +
+geom_histogram(fill= "green", color = "black") +
+labs(x = "Profit", y = "Frequency") +
+ggtitle("Profit histogram")
+
+```
+
+### Line graph 
+
+```{r}
+ggplot(data = df, aes(x=Marketing.Spend, y = Profit))+
+geom_line(color = "red")+
+labs(x= "Marketing Expenditure", y = "Profit")+
+ggtitle("Relationship between Marketing Expenditure and Profit")
+```
+
+### Scatterplot 
+
+```{r}
+ggplot(data = df, aes(x=Administration, y = Profit))+
+geom_point() +
+geom_smooth(method = "lm", se = F, color = "brown") +
+labs(x = "Administration", y = "Profit") +
+ggtitle("Administration vs Profit")
+```
+
+## Correlation tests
+### Marketing Expenditure and Profit
+```{r}
+cor.test(df$Marketing.Spend, df$Profit)
+```
+
+### Adminisration and Profit
+
+```{r}
+cor.test(df$Administration, df$Profit)
+```
+
+### R.D.Spend and Profit
+
+```{r}
+cor.test(df$R.D.Spend, df$Profit)
+```
+
