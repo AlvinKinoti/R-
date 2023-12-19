@@ -1,0 +1,93 @@
+---
+title: "Retail Sales EDA Project"
+author: "Alvin Kinoti"
+date: "2023-12-11"
+output: pdf_document
+---
+
+## Importing the necesarry libraries
+
+```{r}
+library(dbplyr)
+library(tidyverse)
+library(ggplot2)
+library(DescTools)
+```
+
+## Importing the Dataset
+
+```{r}
+retail_sales <- read.csv("D:/Data Projects/Practice Files/Retails Sales Dataset/retail_sales_dataset.csv")
+```
+
+## Cleaning the DataSet
+
+```{r}
+head(retail_sales)
+```
+```{r}
+tail(retail_sales)
+```
+```{r}
+summary(retail_sales)
+```
+## Checking for Duplicates 
+
+```{r}
+sum(duplicated(retail_sales))
+```
+## Checking for Outliers
+
+```{r}
+retail_sales$Total.Amount[retail_sales$Total.Amount %in% boxplot.stats(retail_sales$Total.Amount)$out]
+```
+```{r}
+retail_sales$Price.per.Unit[retail_sales$Price.per.Unit%in% boxplot.stats(retail_sales$Price.per.Unit)$out]
+```
+
+```{r}
+retail_sales$Quantity[retail_sales$Quantity %in% boxplot.stats(retail_sales$Price.per.Unit)$out]
+```
+## Visualizing the dataset
+
+### Histogram for Total Amount
+
+```{r}
+ggplot(data = retail_sales, aes(x = Total.Amount))+
+  geom_histogram(fill = "red", color = "skyblue", bins = 10)+
+  labs(x= "Total Amount", y = "Frequency")+
+  ggtitle("Frequency of Total Amount")
+```
+## bargraph for the product category
+
+```{r}
+ggplot(data = retail_sales, aes(y = Total.Amount, x = Product.Category))+
+  geom_col()+
+  labs(x = "Product Category", y = "Total Amount")+
+  ggtitle("Chart for Total Amount per Product Category")
+```
+## Histogram for the Customer Age
+
+```{r}
+ggplot(data=retail_sales, aes(x=Age))+
+  geom_bar(fill ="skyblue", color = "black", bins = 10)+
+  labs(x="Customer Age", y= "Frequency")+
+  ggtitle("Customer Age Frequency")
+```
+## Heatmap for Customer Age and Total Amount
+
+```{r}
+ggplot(data=retail_sales, aes(x=Age, y=Total.Amount))+
+  geom_bin_2d()+
+  labs(x = "Customer Age", y = "Total Amount")+
+  ggtitle("Heatmap of Age and Total Amount")
+```
+# Scatter Plot for Customer Age and Total Amount with a regression line
+
+```{r}
+ggplot(data=retail_sales, aes(x=Age, y=Total.Amount))+
+  geom_point()+
+  labs(x = "Age", y = "Total Amount") +
+  ggtitle("Relationship of Price Per Unit and Total Amount")
+```
+

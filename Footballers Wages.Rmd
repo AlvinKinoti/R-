@@ -1,0 +1,129 @@
+---
+title: "Football Wage EDA"
+author: "Alvin Kinoti"
+date: "2023-12-19"
+output: word_document
+---
+
+## Importing the necessary ilbraries
+
+```{r}
+library(dbplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+## Loading the dataset
+
+```{r}
+df <- read.csv("D:/Data Projects/Practice Files/Football Wages Dataset/SalaryPrediction.csv")
+
+head(df)
+tail(df)
+```
+
+## Cleaning the Dataset
+### Checking for null values
+
+```{r}
+summary(df)
+```
+```{r}
+means <- c(mean(df$Wage), mean(df$Age), mean(df$Apps), mean(df$Caps))
+
+print(means)
+```
+### Removing duplicates
+
+```{r}
+df1 <- unique(df)
+
+head(df1, 2)
+```
+### Outliers
+
+```{r}
+df1$Age[df1$Age %in% boxplot.stats(df1$Age)$out]
+```
+```{r}
+wages <- df1[! df1$Age %in% boxplot.stats(df1$Age)$out, ]
+
+wages
+```
+## Data Analysis
+
+```{r}
+cor.test(wages$Wage, wages$Age)
+```
+```{r}
+cor.test(wages$Apps, wages$Caps)
+```
+```{r}
+cor.test(wages$Wage, wages$Apps)
+```
+```{r}
+cor.test(wages$Wage, wages$Caps)
+```
+```{r}
+cor.test(wages$Age, wages$Caps)
+```
+```{r}
+mean(wages$Wage) / mean(wages$Age)
+```
+```{r}
+var.test(wages$Wage, wages$Apps)
+```
+```{r}
+median(wages$Age)
+```
+```{r}
+quantile(wages$Age, 0.25)
+quantile(wages$Age, 0.75)
+```
+```{r}
+#  interquartile range for Age
+
+IQR(wages$Age)
+```
+```{r}
+IQR(wages$Wage)
+```
+```{r}
+IQR(wages$Apps)
+```
+## Visuaizing the Dataset
+### Frequency distribution for Age.
+
+```{r}
+ggplot(data = wages, aes(x=Age))+
+  geom_histogram(bins = 35, color = "black", fill = "green")+
+  labs(x = "Age of Players", y="Frequency")+
+  ggtitle("Age Frequency Distribution")
+```
+### Distribution of wages per league.
+
+```{r}
+ggplot(data = wages, aes(x= Wage, y = League))+
+  geom_col(fill="skyblue")+
+  labs(x="Footballers Wages", y = "Football Leagues")+
+  ggtitle("Footballers Wages per League")
+```
+
+### Density plot for Apps
+
+```{r}
+ggplot(data = wages, aes(x = Apps, fill = Club))+
+  geom_density(alpha= 1.5)+
+  labs(x= "Appearances", y= "Density")+
+  ggtitle("Density for Player Appearances")
+```
+
+## Scatter plot for Caps and wages
+
+```{r}
+ggplot(data = wages, aes(x=Caps, y= Wage))+
+  geom_point()+
+  labs(x = "Caps", y = "Player Wages")+
+  ggtitle("Caps vs Player Wages")
+```
+
