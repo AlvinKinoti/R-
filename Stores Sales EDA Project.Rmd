@@ -1,0 +1,178 @@
+---
+title: "Store Sales EDA"
+author: "Alvin Kinoti"
+date: "2024-01-15"
+output: word_document
+---
+
+## Loading the required libraries
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+## Loading the dataset
+```{r}
+library(readxl)
+sales <- read_excel("D:/Data Projects/Practice Files/US Stores Sales/sales.xlsx")
+View(sales)
+```
+
+## Cleaning the dataset
+```{r}
+summary(sales)
+```
+
+```{r}
+sum(duplicated(sales))
+```
+### Dealing with Outliers
+```{r}
+sales$Profit[sales$Profit %in% boxplot.stats(sales$Profit)$out]
+```
+
+```{r}
+sales <- sales[! sales$Profit %in% boxplot.stats(sales$Profit)$out, ]
+sales                
+```
+
+```{r}
+sales$Margin[sales$Margin %in% boxplot.stats(sales$Margin)$out]
+```
+
+```{r}
+sales <- sales[! sales$Margin %in% boxplot.stats(sales$Margin)$out, ]
+sales
+```
+
+```{r}
+sales$Sales[sales$Sales %in% boxplot.stats(sales$Sales)$out]
+```
+
+
+```{r}
+sales <- sales[! sales$Sales %in% boxplot.stats(sales$Sales)$out, ]
+sales
+```
+
+```{r}
+sales$COGS[sales$COGS %in% boxplot.stats(sales$COGS)$out]
+```
+
+```{r}
+sales <- sales[! sales$COGS %in% boxplot.stats(sales$COGS)$out, ]
+sales
+```
+
+
+```{r}
+sales$`Total Expenses`[sales$`Total Expenses` %in% boxplot.stats(sales$`Total Expenses`)$out]
+```
+
+
+```{r}
+sales <- sales[! sales$`Total Expenses` %in% boxplot.stats(sales$`Total Expenses`)$out, ]
+sales
+```
+
+
+```{r}
+sales$Marketing[sales$Marketing %in% boxplot.stats(sales$Marketing)$out]
+```
+
+```{r}
+sales <- sales[!sales$Marketing %in% boxplot.stats(sales$Marketing)$out, ]
+sales
+```
+
+
+```{r}
+sales <- sales[! sales$Inventory %in% boxplot.stats(sales$Inventory)$out, ]
+sales
+```
+
+```{r}
+sales <- sales[! sales$`Budget Profit` %in% boxplot.stats(sales$`Budget Profit`)$out, ]
+sales
+```
+
+
+```{r}
+sales <- sales[! sales$`Budget COGS` %in% boxplot.stats(sales$`Budget COGS`)$out, ]
+sales
+```
+
+```{r}
+sales <- sales[!sales$`Budget Margin` %in% boxplot.stats(sales$`Budget Margin`)$out, ]
+sales
+```
+
+
+```{r}
+sales <- sales[!sales$`Budget Sales` %in% boxplot.stats(sales$`Budget Sales`)$out, ]
+sales
+```
+
+
+```{r}
+summary(sales)
+```
+## Visualizing and analyzing the dataset
+### Profit per Consumer Market
+```{r}
+ggplot(data = sales, aes(x = Market, y = Profit))+
+  geom_col(color = "blue")+
+  labs(x = "Consumer Market", y = "Profit")+
+  ggtitle("Profit per Consumer Market ")
+  
+```
+### Relationship between Profit and Cost of Production
+
+```{r}
+ggplot(data = sales , aes(x= COGS, y = Profit))+
+  geom_line()+
+  labs(x= "Cost of Production", y = "Profit")+
+  ggtitle("Relationship between Profit and Cost of Production")
+```
+### Highest Accounted Profit Recorded
+```{r}
+ggplot(data = sales, aes(x=`Budget Profit`))+
+  geom_histogram(bins = 10)+
+  labs(x = "Accounted Profit", y = "Frequency")+
+  ggtitle("Accounted Profit Frequency")
+```
+## Product Type With The Highest Accounted Profit
+```{r}
+ggplot(data = sales, aes(x = "", fill = `Product Type`, y = `Budget Profit`))+
+  geom_col()+
+  coord_polar(theta = "y")+
+  ggtitle("Accounted Profit per Product Type")
+```
+## State with the Highest Projected Sales
+```{r}
+ggplot(data = sales, aes(y= State, x = `Budget Sales`))+
+  geom_col(fill = "black")+
+  labs(y = "State", x = "Projected Sales")+
+  ggtitle("State with the Highest Projected Sales")
+```
+### Checking for correlations between variables
+
+#### Profit and Accounted Profit
+```{r}
+cor.test(sales$Profit, sales$`Budget Profit`)
+```
+#### Budget Sales and Marketing
+```{r}
+cor.test(sales$`Budget Sales`, sales$Marketing)
+```
+#### Budget Margin and Total Expenses 
+```{r}
+cor.test(sales$`Budget Margin` , sales$`Total Expenses`)
+```
+
+#### Budgeted Production Cost and Budget Sales
+```{r}
+cor.test(sales$`Budget COGS`, sales$`Budget Sales`)
+```
+
