@@ -1,0 +1,93 @@
+---
+title: "Diabetes Prediction Model"
+author: "Alvin Kinoti"
+date: "2024-01-29"
+output: word_document
+---
+
+## Load the libraries and the dataset
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(caTools)
+
+data <- read.csv("D:/Data Projects/Practice Files/Diabetes/diabetes.csv")
+View(data)
+```
+
+## Dealing with any null values
+```{r}
+data <- na.omit(data)
+```
+
+##  Splitting the dataset into testing and training
+```{r}
+split <- sample.split(data, SplitRatio = 0.8)
+split
+
+training <- subset(data, split == TRUE)
+testing <- subset(data, split == FALSE)
+```
+## Buidling the model
+```{r}
+model <- glm(Outcome~., training, family = "binomial")
+summary(model)
+```
+## Checking the influence of non significant i..v on the model
+```{r}
+model <- glm(Outcome~.-SkinThickness, training, family = "binomial")
+summary(model)
+```
+## SkinThickness is not a signifiant variable in the model. (Because AIC and Residual Devance have decreased after removing it)
+
+```{r}
+model <- glm(Outcome~.-Insulin, training, family = "binomial")
+summary(model)
+```
+## Insulin is a signifiant variable in the model. (Because AIC and Residual Devance have increased after removing it)
+
+```{r}
+model <- glm(Outcome~.-Age, training, family = "binomial")
+summary(model)
+```
+## Age is a signifiant variable in the model. (Because AIC and Residual Devance 
+have increased after removing it)
+
+## Predicting the values for the dataset
+
+```{r}
+res <- predict(model, testing, type = "response")
+res
+```
+## Comparing the real values with the predicted values 
+## threshold = 0.5, if probability =>0.5, patient is diabetic, 
+## probability <0.5, patient is not diabetic
+```{r}
+testing
+```
+## Calculating the threshold
+```{r}
+res <- predict(model, training, type = "response")
+
+library(ROCR)
+ROCRPred <- prediction(res, training$Outcome)
+ROCRPerf <- performance(ROCRPred, "tpr", "fpr")
+```
+
+## Plotting the threshold analysis graph
+```{r}
+plot(ROCRPerf, colorize=TRUE, print.cutoffs.at=seq(0.1, by=0.1))
+```
+## Computing the Confusion Matrix
+```{r}
+res <- predict(model, testing, type = "response")
+
+table(Actual_Value = testing$Outcome, Predicted_Value = res>0.3)
+table
+```
+## Calculating the Accuracy of the Model
+```{r}
+(88+42)/ (88+31+10+42)
+```
+## Conclusion: The Model has a 76% accuracy rate and is a good predictor.
