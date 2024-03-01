@@ -1,0 +1,65 @@
+---
+title: "Sales Prediction Model"
+author: "Alvin"
+date: "2024-02-27"
+output: powerpoint_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Loading the Required Libraries and Dataset 
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(caTools)
+```
+```{r}
+data <- read.csv("D:/Data Projects/Practice Files/Supermarket Sales/supermarket_sales - Sheet1.csv")
+```
+
+```{r}
+View(data)
+```
+
+```{r}
+summary(data)
+```
+## Cleaning the data
+```{r}
+na.omit(data)
+```
+```{r}
+unique(data)
+```
+## Converting the datatype to the correct data type
+```{r}
+sapply(data, class)
+```
+## Dealing with outliers with the dependent variable.
+```{r}
+data$Rating[data$Rating %in% boxplot.stats(data$Rating)$out]
+```
+## Visualizing the dataset
+```{r}
+ggplot(data = data , aes(x =Rating))+
+  geom_histogram(fill = "green", color = "black")+
+  labs(x="Ratings", y ="Frequency")+
+  ggtitle("Ratings Frequency")
+```
+```{r}
+ggplot(data = data, aes(x=Branch, y = Rating))+
+  geom_col(color = "skyblue")+
+  labs(x="Branch", y = "Customer Ratings")+
+  ggtitle("Total Customer Ratings per Branch")
+```
+```{r}
+ggplot(data = data , aes(x= Unit.price, y = Quantity))+
+  geom_point()+
+  geom_smooth(method = "lm", se=F, color = "orange")+
+  labs(x = "Unit Price", y = "Quantity")+
+  ggtitle("Relationship between Unit Price and Quantity")
+```
+## The unit price and quanity are mutually exclusive.
