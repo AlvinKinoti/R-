@@ -1,0 +1,149 @@
+---
+title: "Restaurant Promotion Promotion Prediction Model"
+author: "Alvin"
+date: "2024-03-07"
+output: word_document
+---
+
+## Loading the libraries and dataset
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(caTools)
+```
+
+```{r}
+df <- read.csv("D:/Data Projects/Practice Files/Restaurants Revenue Prediction/Restaurant_revenue (1).csv")
+
+View(df)
+```
+
+## Exploring the dataset
+```{r}
+summary(df)
+```
+```{r}
+# Checking for any null values
+
+sum(is.na(df))
+```
+```{r}
+# Checking for any duplicates
+
+sum(duplicated(df))
+```
+```{r}
+## Dealing with outliers with the Monthly Revenue
+
+df$Monthly_Revenue[ df$Monthly_Revenue %in% boxplot.stats(df$Monthly_Revenue)$out]
+```
+```{r}
+restaurant <- df[! df$Monthly_Revenue %in% boxplot.stats(df$Monthly_Revenue)$out, ]
+
+View(restaurant)
+summary(restaurant)
+```
+## Visualizing the Dataset
+```{r}
+# Cusisine Types greater than the monthly revenue median with the number of customers
+
+result1 <- restaurant %>% 
+  filter(Monthly_Revenue > 270.513) %>% 
+  group_by(Marketing_Spend) %>% 
+  select(Cuisine_Type, Monthly_Revenue)
+  
+print(result1)
+```
+```{r}
+# Cuisine Types with the highest demand
+
+ggplot(data = restaurant, aes(x = Cuisine_Type, y = Number_of_Customers))+
+  geom_col(fill = "maroon")+
+  labs(x = "Cuisine Type", y = "Demand")+
+  ggtitle("Demand per Cuisine Type")
+```
+```{r}
+## Relationship between Demand and Cost of Meals
+
+ggplot(data = restaurant, aes(x = Number_of_Customers, y = Menu_Price))+
+  geom_point()+
+  geom_smooth(method = "lm", se = F, color = "green")+
+  labs(x = "Demand", y = "Cost of Meals")+
+  ggtitle("Relationship between Demand and Cost of Meals")
+```
+```{r}
+## The Relationship between Demand and Cost of Meals is almost Elastic.
+```
+## Designing the Promotions Prediction Model
+```{r}
+restaurant1 = restaurant[-c(4)]
+
+split <- sample.split(restaurant1, SplitRatio = 0.75)
+split
+```
+
+```{r}
+training <- subset(restaurant1, split == TRUE)
+testing <- subset(restaurant1 , split == FALSE)
+```
+
+```{r}
+model1 <- glm(Promotions ~., training, family = "binomial")
+summary(model1)
+```
+## Checking influence of Independent Variables on the Dependent Variable
+```{r}
+model <- glm(Promotions ~.-Number_of_Customers, training, family = "binomial")
+model
+```
+## The Number of Customers (Demand) is significant to the model since Residual Deviance has Increased after removing it
+
+```{r}
+model <- glm(Promotions ~.-Menu_Price, training, family = "binomial")
+model
+```
+## The Menu Price is insignificant to the model since AIC and Residual Deviance have deccreased after removing it.
+
+```{r}
+model <- glm(Promotions ~.-Marketing_Spend, training, family = "binomial")
+model
+```
+## The Marketing Expenditure (Marketing_Spend) is insignificant to the model since AIC and Residual Deviance have deccreased after removing it.
+
+```{r}
+model <- glm(Promotions ~.-Average_Customer_Spending, training, family = "binomial")
+model
+```
+## The Average_Customer_Spending) is significant to the model since AIC and Residual Deviance have increased after removing it.
+
+```{r}
+model <- glm(Promotions ~.-Reviews, training, family = "binomial")
+model
+```
+## The Reviews is insignificant to the model since AIC and Residual Deviance have decreased after removing it.
+
+```{r}
+model <- glm(Promotions ~.-Monthly_Revenue, training, family = "binomial")
+model
+```
+## The Monthly Revenue is insignificant to the model since AIC and Residual Deviance have decreased after removing it.
+
+## Predicting the Values for the dataset
+```{r}
+res <- predict(model1, testing, type = "response")
+res
+```
+## Creating the Confusion Matrix to find the accuracy of the model
+```{r}
+table(Actual_Value = testing$Promotions, Predicted_Value = res>0.5)
+table
+```
+## Finding the Accuracy
+```{r}
+(97+45) / (97+34+108+45)
+```
+
+
+
+
