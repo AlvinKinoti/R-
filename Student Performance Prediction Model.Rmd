@@ -1,0 +1,48 @@
+---
+title: "Student Performance Prediction Model"
+author: "Alvin"
+date: "2024-03-13"
+output: word_document
+---
+
+## Loading the reuired libraries
+```{r}
+library(tidyverse)
+library(corrplot)
+library(caTools)
+library(dplyr)
+library(ggplot2)
+```
+
+## Loading the dataset
+```{r}
+df <- read.csv("D:/Data Projects/Practice Files/Student Performance/Student_Performance.csv")
+```
+
+## Exploring the dataset
+```{r}
+summary(df)
+```
+## Building the model
+```{r}
+
+split <- sample.split(df$Performance.Index, SplitRatio = 0.8)
+split
+```
+```{r}
+## dividing into training and testing sets
+training = subset(df, split == TRUE)
+testing = subset(df, split == FALSE)
+```
+
+
+```{r}
+## designing  and implementing the model
+
+model <- lm(Performance.Index~., data = training)
+
+summary(model)
+```
+## Conlcusion: The model has an accuracy score of 98%, making it an accurate predictor of the student performance
+```
+
