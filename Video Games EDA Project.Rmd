@@ -1,0 +1,190 @@
+---
+title: "Video Game Sales EDA Project"
+author: "Alvin"
+date: "2024-07-13"
+output: word_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+The Main purpose of this EDA Project is to conduct a simple but robuts Exploratory Data Analysis exericise on a video games dataset.
+
+It involves:
+1. Loading the dataset
+2. Exploring the dataset
+3. Cleaning the dataset (removing null values, cleaning, detecting and removing outliers)
+4. Visualizng the dataset
+5. Exploratory Data Analysis
+6. Conclusion
+
+## Setting the working directory
+```{r}
+setwd("C:/Users/Alvin/Desktop/Data Projects/R Programming")
+getwd()
+```
+## Loading the dataset
+```{r}
+df <- read.csv("C:/Users/Alvin/Downloads/Compressed/Video Games Sales Dataset/Video_Games_Sales_as_at_22_Dec_2016.csv")
+```
+
+## Investigating the dataset
+
+## checking a brief overview of the dataset
+```{r}
+summary(df)
+```
+The above results show the various metrics of the columns within the dataset.
+
+## Checking the shape of the dataset
+```{r}
+dim(df)
+```
+The dataset has 16719 rows and 16 columns
+
+## Cleaning the dataset
+### checking the number of empty values in the dataset
+```{r}
+sum(is.na(df))
+```
+### Removing the empty values 
+```{r}
+df1 <- na.omit(df)
+
+# checking for any remaining empty values
+sum(is.na(df1))
+```
+### Checking for any duplicates
+```{r}
+sum(duplicated(df1))
+```
+There is no duplicated values in the cleaned dataset.
+
+## Checking for any outliers in the dataset
+### Checking in the NA_Sales Column
+```{r}
+df1$NA_Sales[df1$NA_Sales %in% boxplot.stats(df1$NA_Sales)$out]
+```
+### Removing the outliers
+```{r}
+df2 <- df1[! df1$NA_Sales %in% boxplot.stats(df1$NA_Sales)$out, ]
+```
+
+### Removing outliers in Other Columns
+### 1. EU_Sales
+```{r}
+df3 <- df2[! df2$EU_Sales %in% boxplot.stats(df2$EU_Sales)$out, ]
+```
+
+### 2. JP_Sales
+```{r}
+df4 <- df3[! df3$JP_Sales %in% boxplot.stats(df3$JP_Sales)$out, ]
+```
+
+### 3. Other_Sales 
+```{r}
+df5 <- df4[! df4$Other_Sales %in% boxplot.stats(df4$Other_Sales)$out, ]
+```
+
+### 4. Global_Sales
+```{r}
+df6 <- df5[! df5$Global_Sales %in% boxplot.stats(df5$Global_Sales)$out, ]
+```
+
+### 5. Critic_Score
+```{r}
+df7 <- df6[! df6$Critic_Score %in% boxplot.stats(df6$Critic_Score)$out, ]
+```
+
+### 6. Critic_Count
+```{r}
+df8 <- df7[! df7$Critic_Count %in% boxplot.stats(df7$Critic_Count)$out, ]
+```
+
+### 7.User_Score
+```{r}
+df9 <- df8[! df8$User_Score %in% boxplot.stats(df8$User_Score)$out, ]
+```
+
+### 8. User_Count
+```{r}
+df10 <- df9[! df9$User_Score %in% boxplot.stats(df9$User_Score)$out, ]
+
+data <- df10
+```
+
+## Exploratory data analysis
+
+### Visualizing the dataset
+
+### 1. Plotting the Developer  with the highest Demand
+
+```{r}
+#loading the required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+
+ggplot(data = data, aes(x=Genre ))+
+  geom_bar( fill = "skyblue")+
+  labs(x= "Genre", y = "Demand")+
+  ggtitle("Demand Per Genre")+
+  theme(plot.title = element_text(hjust=0.5))
+```
+### 2. Comparison Between Other Sales and Global Sales
+```{r}
+ggplot(data = data, aes(x = Other_Sales, y = Global_Sales))+
+  geom_line(stat = "identity", position = "identity", color = "darkgreen")+
+  labs(x= "Other Sales", y = "Global Sales")+
+  ggtitle("Comparison Between Other Sales and Global Sales")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+### 3. plotting the correlation plot between the variables
+```{r}
+numeric = data[-c(1:5,8,15:16)]
+ 
+correlation = cor(numeric)
+
+library(corrplot)
+corrplot(correlation, method = 'color', order = 'alphabet')
+```
+### 4. Finding the paired t-test for global and other sales
+```{r}
+library(readr)
+
+t_test_sales <- t.test(data$Global_Sales, data$Other_Sales, paired = TRUE)
+t_test_sales
+```
+### 5. Finding the paired t-test for EU and NA sales
+```{r}
+library(readr)
+
+t_test_sales_2 <- t.test(data$NA_Sales, data$EU_Sales, paired = TRUE)
+t_test_sales_2
+```
+### 6. MeaN Absolute Errors (MAE) for the above two pairs
+```{r}
+mae_global_other_sales = mean(abs(data$Global_Sales - data$Other_Sales))
+mae_na_eu_Sales = mean(abs(data$NA_Sales - data$EU_Sales))
+
+## printing the above two results
+cat("Mean Absolute Error for Global and Other Sales:", mae_global_other_sales, "\n")
+cat("Mean Absolute Error for Na and Eu Sales:", mae_na_eu_Sales, "\n")
+```
+## Interpreation of the above two:
+
+The Mean Absolute Error for Na and Eu Sales indicated a better fit of the data compared to the Mean Absolute Error for Global and Other Sales as it is much closer to zero, thus having a better line of best fit and a prediction model with a higher accuracy.
+
+
+## Conclusion
+1. Action Video Games lead with the highest demand of more than 750 while Puzzle games trail with a demand of less than 125.
+2. The trend between Global Sales and Other Sales is on an upward trend.
+3. There is a strong relationship between Global Sales, EU Sales, Other Sales and NA Sales. This could be attributed to a variety of factors e.g access to gaming devices, technological adfvancement in those markets etc.
+
+## Recommendations:
+1. There is need for more technological upgrades and marketing strategies in other markets aprt from the Global Sales, EU Sales, Other Sales and NA Sales markets.
+2. More games should be produced and sold in the Sales, EU Sales, Other Sales and NA Sales markets to maximize on sales. 
+3. More action games should be produced to boost revenue.
