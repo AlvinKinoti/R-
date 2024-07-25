@@ -1,0 +1,200 @@
+---
+title: "Bank Customer Churn Prediction Model"
+author: "Alvin"
+date: "2024-07-25"
+output: pdf_document
+---
+
+## Objective:
+The main aim of this is to predict the customer turn over of a bank from a sample dataset.
+
+## Setting the working directory
+```{r}
+setwd("D:/R Programming")
+getwd()
+```
+## Loading the required libraries
+```{r}
+library(caTools)
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+library(ROCR)
+```
+## Loading the dataset
+```{r}
+df <- read.csv("C:/Users/Alvin/Downloads/Compressed/Bank Customer Churn/Customer-Churn-Records.csv")
+```
+
+## Exploring the dataset
+## An overall summary of the dataset
+```{r}
+summary(df)
+```
+## Checking the first 5 rows of the dataset
+```{r}
+head(df)
+```
+## Cleaning the dataset
+## Removing unwanted columns
+```{r}
+df1 <- df[-c(1, 2, 3, 5, 6, 17)]
+```
+
+## Checking for any outliers
+```{r}
+## 1. Estimated Salary 
+
+df1$EstimatedSalary[df1$EstimatedSalary %in% boxplot.stats(df$EstimatedSalary)$out]
+```
+```{r}
+## 2. Point Earned
+
+df1$Point.Earned[df1$Point.Earned %in% boxplot.stats(df1$Point.Earned)$out]
+```
+```{r}
+## 3. Credit Score
+
+df1$CreditScore[df1$CreditScore %in% boxplot.stats(df1$CreditScore)$out]
+```
+```{r}
+df2 <- df1[! df1$CreditScore %in% boxplot.stats(df1$CreditScore)$out, ]
+```
+
+```{r}
+## Balance
+
+df2$Balance[df2$Balance %in% boxplot.stats(df2$Balance)$out]
+```
+```{r}
+data <- df2
+```
+
+## Developing the Model
+## Spliting the data
+```{r}
+split <- sample.split(data, SplitRatio = 0.75)
+split
+```
+```{r}
+# defining the training and testing datasets
+
+training <- subset(data, split == TRUE)
+testing <- subset(data, split == FALSE)
+```
+
+## Building the model
+```{r}
+model <- glm(Exited~., training, family = "binomial")
+summary(model)
+```
+## Checking the influence of the independent variables
+```{r}
+# 1. CreditScore
+model1 <- glm(Exited~. -CreditScore, training, family = "binomial")
+model1
+```
+Interpretation: Credit Score is a farily signifiant variable in the model. (Because AIC has decreased and Residual Deviance have increased after removing it)
+
+```{r}
+# Age
+model1 <- glm(Exited~. -Age, training, family = "binomial")
+model1
+```
+Interpretation: Age is a significant variable as both Residual Deviance and AIC have increased after removing it.
+
+```{r}
+# Tenure 
+model1 <- glm(Exited~. -Tenure, training, family = "binomial")
+model1
+```
+Interpretation: Tenure is not a significant variable due to the decrease in the AIC and Rsidual Deviance.
+
+```{r}
+# Balance 
+
+model1 <- glm(Exited~.-Balance, training , family = "binomial")
+model1
+```
+Interpretation: Balance is significant variable on the model as both Residual Deviance and AIC have increased.
+
+```{r}
+# NumOfProducts 
+
+model1 <- glm(Exited~.-NumOfProducts, training , family = "binomial")
+model1
+```
+# Interpretation: Number of Products is significant variable on the model as both Residual Deviance and AIC have increased.
+
+```{r}
+# HasCrCard
+
+model1 <- glm(Exited~.-HasCrCard, training , family = "binomial")
+model1
+```
+# Interpretation: Ownership of a Credit Card is not significant variable on the model as both Residual Deviance and AIC have decreased.
+
+```{r}
+# IsActiveMember
+
+model1 <- glm(Exited~.-IsActiveMember, training , family = "binomial")
+model1
+```
+Interpretation: Member Status is significant variable on the model as both Residual Deviance and AIC have increased.
+
+```{r}
+# EstimatedSalary
+
+model1 <- glm(Exited~.-EstimatedSalary, training , family = "binomial")
+model1
+```
+Interpretation: Estimated Salary is not significant variable on the model as both Residual Deviance and AIC have decreased.
+
+```{r}
+# Complain
+
+model1 <- glm(Exited~.-Complain, training , family = "binomial")
+model1
+```
+Interpretation: Complains are a significant variable on the model as both Residual Deviance and AIC have increased.
+
+```{r}
+# Satisfaction.Score
+
+model1 <- glm(Exited~.-Satisfaction.Score, training , family = "binomial")
+model1
+```
+Interpretation: Satisfaction Score is not significant variable on the model as both Residual Deviance and AIC have decreased.
+
+```{r}
+# Point.Earned
+
+model1 <- glm(Exited~.-Point.Earned, training , family = "binomial")
+model1
+```
+Interpretation: Points Earned are a significant variable on the model as both Residual Deviance and AIC have increased.
+
+## Predicting the values for the model
+```{r}
+pred <- predict(model, testing, type = "response")
+```
+
+## Creating the Confusion Matrix to find the accuracy of the model
+```{r}
+table(Actual_Value = testing$Exited, Predicted_Value = pred>0.4)
+table
+```
+## Finding the accuracy
+```{r}
+(1990 + 505) / (1990+1+1+505)
+```
+Interpreation: The model has an accuracy of 99%.
+
+## Conclusion
+The model has an accuracy of 99% making it a good predictor of customer churn in the bank.
+
+
+
+
+
+
