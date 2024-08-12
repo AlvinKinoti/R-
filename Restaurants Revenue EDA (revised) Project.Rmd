@@ -1,0 +1,143 @@
+---
+title: "Restaurants Revenue EDA"
+author: "Alvin"
+date: "2024-08-10"
+output: pdf_document
+---
+
+## Setting the working directory
+```{r}
+setwd("D:/Personal Projects 2/R Programming")
+
+getwd()
+```
+## Loading the required libraries
+```{r}
+library(ggplot2)
+library(corrplot)
+library(tidyverse)
+library(dplyr)
+```
+
+## Loading the dataset
+```{r}
+df <- read.csv("D:/Personal Projects 2/Practice Files July 2024/Restaurants Revenue Prediction/Restaurant_revenue (1).csv")
+```
+
+## ETL
+```{r}
+# the first 5 rows
+
+head(df)
+```
+```{r}
+## summary statistics of the dataset
+
+summary(df)
+```
+From the above results, the shape of the dataset is (1000, 8).
+
+```{r}
+## checking for any null values 
+
+sum(is.na(df))
+```
+
+```{r}
+## checking for any duplicates
+
+sum(duplicated(df))
+```
+There are no duplicates or null values in the dataset
+
+N/B - Due to the small size of the dataset, the outliers are not removed. 
+
+## Analyzing and visualizing the dataset
+```{r}
+## Identifying the total number of customers
+
+cat("Total number of Customers:",sum(df$Number_of_Customers))
+```
+```{r}
+## Average menu price
+
+cat("Average Menu Price:", mean(df$Menu_Price))
+```
+```{r}
+## Average Marketing Spend
+
+cat("Average Marketing Spend:", mean(df$Marketing_Spend))
+```
+```{r}
+## Average Monthly Revenue
+
+cat("Average Monthly Revenue:",mean(df$Monthly_Revenue))
+```
+```{r}
+## Median Reviews
+
+cat("Median Reviews:", median(df$Reviews))
+```
+```{r}
+## Most preferred cuisine
+
+ggplot(data = df, aes(x = Cuisine_Type, y = Number_of_Customers))+
+  geom_col(fill = "maroon")+
+  labs( x = "Cuisine Type" , y = "Number of Customers")+
+  ggtitle("Demand per Cuisine", subtitle = "(Analysis of Cusdtomer Preference For Each Cuisine)")
+```
+The Japanese is the most in demand Cuisine
+
+```{r}
+## Most profitable cuisine
+
+ggplot(data = df, aes(x = Monthly_Revenue, y = Cuisine_Type))+
+  geom_col(fill = "darkgreen")+
+  labs(x = "Revenue", y = "Cuisine")+
+  ggtitle("Revenue Per Cuisine")
+```
+The Japanese is the most profitable cuisine.
+
+```{r}
+## The relationship between numeric variables
+
+numeric <- df[-c(4)] ##removing categorical data
+
+correlation <- cor(numeric)
+
+corrplot(correlation, method =  "number", order = "alphabet", title = "Relationship Between Variables")
+```
+Tip: The boxxes without numbers imply that the correlation between the two variables is zero.
+
+
+```{r}
+## t-test for the numerical values
+
+library(readr)
+
+t_test_price_revenue <- t.test(df$Monthly_Revenue, df$Menu_Price)
+t_test_price_revenue
+```
+The null hypothesis is rejected since there exists a statistical difference between the two populations.
+
+```{r}
+t_test_reviews_marketing <- t.test(df$Reviews, df$Marketing_Spend)
+t_test_reviews_marketing
+```
+The two means are significantly different as specified by the null hypothesis, thus the null hypothesis is discredited. 
+
+```{r}
+## Investigating the line of best fit
+
+mae_profit = mean(abs(df$Monthly_Revenue - df$Menu_Price))
+mae_campaign_effectiveness = mean(abs(df$Reviews - df$Marketing_Spend))
+
+## printing the above two results
+cat("Mean Absolute Error for Profit:", mae_profit, "\n")
+cat("Mean Absolute Error for Campaign Effectiveness:", mae_campaign_effectiveness, "\n")
+```
+The mean absolute error for Campaign Effectiveness indicates a better line of best fit than the mean absoulte error for profit as it it more closer to zero.
+
+
+
+
