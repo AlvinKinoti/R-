@@ -1,0 +1,121 @@
+---
+title: "Sports Car EDA"
+author: "Alvin"
+date: "2024-09-10"
+output: pdf_document
+---
+
+This projects seeks to unveil hidden insights in a sports car sample dataset.
+
+```{r}
+## setting the working directory
+
+setwd("D:/Personal Projects 2/R Programming")
+getwd()
+```
+```{r}
+## loading the dataset
+
+df<- read.csv("D:/Personal Projects 2/Practice Files July 2024/Sports Car Dataset/Sport car price.csv")
+df
+```
+```{r}
+## finding descriptive information ofnthe dataset
+
+summary(df)
+```
+Data Wrangling
+```{r}
+## finding out the number of null values
+
+sum(is.na(df))
+```
+```{r}
+## finding out the number of duplicates
+
+sum(duplicated(df))
+```
+```{r}
+## dropping the duplicates
+
+df <- unique(df)
+
+sum(duplicated(df))
+```
+```{r}
+## importing visualization libraries
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(caTools)
+library(corrplot)
+```
+```{r}
+## outlier detection
+df$Torque..lb.ft.<- as.numeric(df$Torque..lb.ft.)
+df$X0.60.MPH.Time..seconds.<- as.numeric(df$X0.60.MPH.Time..seconds.)
+
+df$Torque..lb.ft.[df$Torque..lb.ft. %in% boxplot.stats(df$Torque..lb.ft.)$out]
+
+df1 <- df[! df$Torque..lb.ft. %in% boxplot.stats(df$Torque..lb.ft.)$out, ]
+```
+
+```{r}
+## removing otuliers in other columns
+
+df2 <- df1[! df1$X0.60.MPH.Time..seconds. %in% boxplot.stats(df1$X0.60.MPH.Time..seconds.)$out, ]
+
+df3 <- df2[! df2$Price..in.USD. %in% boxplot.stats(df2$Price..in.USD.)$out, ]
+```
+
+```{r}
+## checking for any null values
+
+sum(is.na(df3))
+```
+```{r}
+## dropping the null values
+
+df <- drop_na(df3)
+
+sum(is.na(df))
+```
+Data Visualization
+```{r}
+## Price Change Overtime
+
+ggplot(data = df, aes(x= Year, y = Price..in.USD.))+
+  geom_col(fill = "lightgreen")+
+  labs(x = " Time in Years", y = "Price (USD)")+
+  ggtitle("Price Change Overtime")
+```
+```{r}
+## Price distribution
+
+ggplot(data = df, aes(x = Price..in.USD.))+
+  geom_histogram(fill = "darkblue")+
+  labs(x = "Price (USD)")+
+  ggtitle("Price Distribution")
+```
+```{r}
+## Car brand with the highest horsepower
+df$Horsepower <- as.integer(df$Horsepower)
+
+ggplot(data = df, aes(y= Car.Make, x=Horsepower))+
+  geom_col()+
+  labs(y = "Car Brand", x = "Horsepower")+
+  ggtitle("Horsepower Per Car Brand")
+```
+```{r}
+## relationship between numeric variables 
+
+df$Engine.Size..L. <- as.integer(df$Engine.Size..L.)
+
+numeric <- df[c(4:8)]
+numeric
+
+correlation <- cor(numeric)
+
+corrplot(correlation, method = "number", order = "alphabet",title = "Relationship Between Numeric Variables")
+```
+
