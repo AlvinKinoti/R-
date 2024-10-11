@@ -1,0 +1,110 @@
+---
+title: "Tourism and Travel Customer Churn"
+author: "Alvin"
+date: "2024-10-11"
+output: pdf_document
+---
+
+## Loading the dataset
+```{r}
+df <- read.csv("D:/others/Personal Projects 2/Practice Files July 2024/Tours and Travel Customer Churn/Customertravel.csv")
+
+head(df)
+```
+## Investigating the dataset
+```{r}
+summary(df)
+```
+## Data Wrangling
+```{r}
+## loading the required libraries
+
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+library(caTools)
+library(ROCR)
+```
+## Data Wrangling
+## Checking for any null values
+```{r}
+sum(is.null(df))
+```
+## checking for any outliers
+```{r}
+# 1. Outliers in the Age column
+
+df$Customer.Age[df$Customer.Age %in% boxplot.stats(df$Customer.Age)$out]
+```
+```{r}
+
+# 2. Outliers in the Services Opted Column
+df$Services.Opted[df$Services.Opted %in% boxplot.stats(df$Services.Opted)$out]
+```
+## Checking for any duplicates
+```{r}
+sum(duplicated.data.frame(df))
+```
+```{r}
+df <- unique(df)
+
+tail(df)
+```
+## Exploratory Data Analysis
+```{r}
+## Distribution of Customer's Age
+
+library(ggplot2)
+
+ggplot(data = df, aes(x=Customer.Age))+
+  geom_density(colour = "maroon")+
+  labs(x = "Customer Age")+
+  ggtitle("Customer Age Distribution")
+```
+```{r}
+## Income Category per Customer Age
+
+ggplot(data = df, aes(x=Services.Opted, y=Annual.Income.Class))+
+  geom_col(fill="darkred")+
+  labs(x = "Services Opted", y= "Annual Income Category")+
+  ggtitle("Annual Income Category Per Services Opted")
+```
+## Developing the Model
+```{r}
+# Splitting the data
+
+split <- sample.split(df, SplitRatio = 0.8)
+split
+```
+```{r}
+# defining the training and testing datasets
+
+training <- subset(df, split == TRUE)
+testing <- subset(df,split == FALSE)
+```
+
+
+```{r}
+## Implementing the model
+
+model <- glm(Churn~., training, family = "binomial")
+model
+```
+```{r}
+# predicting the values for the model
+
+pred <- predict(model, testing, type = "response")
+pred
+```
+```{r}
+# creating the confusion matrix to predict the model
+
+table(Actual_Value = testing$Churn, Predicted_Value = pred>0.4)
+table
+```
+```{r}
+## Finding the accuracy
+
+(62 +24) / (62 + 23 + 19 + 24)
+```
+The Model has an accuracy of 67% making it a fairly good predictor of customer churn.
