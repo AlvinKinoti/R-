@@ -1,0 +1,256 @@
+---
+title: "Student Exam Score EDA & Prediction Model"
+author: "Alvin"
+date: "2024-11-15"
+output:
+---
+
+## Loading the Dataset
+```{r}
+
+df <- read.csv("D:/others/Personal Projects 2/Practice Files July 2024/Student Performance Factors/StudentPerformanceFactors.csv")
+```
+
+## Loading the required libraries
+```{r}
+library(dplyr)
+library(tidyverse)
+library(caTools)
+library(corrplot)
+```
+
+## Exploring the dataset
+```{r}
+
+# summary statistics
+
+summary(df)
+```
+## Bottom 4 Rows
+```{r}
+tail(df)
+```
+
+## Wrangling the Dataset
+```{r}
+## shape of the dataset
+
+dim(df)
+```
+
+## Removing Duplicates
+```{r}
+
+df <- unique(df)
+
+dim(df)
+```
+## Removing Rows with Missing Values
+```{r}
+dfa <- na.omit(df) # Delete rows with missing values 
+dfa
+```
+
+## Checking For Any Outliers
+```{r}
+## hours studies
+
+df1 <- dfa[! df$Hours_Studied %in% boxplot.stats(dfa$Hours_Studied)$out, ]  
+df1
+```
+```{r}
+## Attendance Column
+
+df2 <- df1[! df$Attendance %in% boxplot.stats(df$Attendance)$out, ] 
+df2
+```
+```{r}
+#exam score column
+
+df3 <- df2[! df2$Exam_Score %in% boxplot.stats(df$Exam_Score)$out, ] 
+df3
+
+data <- df3
+```
+
+## Exploratory Data Analysis
+
+## 1. Univariate Analysis
+```{r}
+## Frequency of Hours Studied
+
+library(ggplot2)
+
+ggplot(data = data, aes(x = Hours_Studied))+
+  geom_histogram(binwidth = 0.2, fill = "blue", color = "black")+
+  labs(X = "Hours Studied", y= "Count")+
+  ggtitle("Frequency of Hours Studied")
+```
+### The Hours Studied has a normal distribution.
+
+```{r}
+## distribution of exam scores
+
+ggplot(data = data, aes(x = Exam_Score))+
+  geom_histogram(binwidth = 0.2, fill = "blue", color = "black")+
+  labs(X = "Exam Score", y= "Count")+
+  ggtitle("Exam Score Distribution")
+```
+### The Exam Score has a normal distribution.
+
+## 2. Bivariate analysis
+```{r}
+## Relationship Between Parental Involvement and Exam Score
+
+clean_data <- data[!is.na(data$Parental_Involvement), ] ## removing undetected null values in the parental involvement column
+
+ggplot(data = clean_data, aes(x = Exam_Score, y= Parental_Involvement))+
+  geom_col(fill = "maroon")+
+  labs(x = "Exam Scores", y = "Parental Involvement Level")+
+  ggtitle("Correlation Between Exam Scores and Levels of Parental Involvement", 
+          subtitle = "A simple Psycho-Analysis affecting student performance based on parental involvement")
+```
+```{r}
+## relationship between school type and exam score
+
+ggplot(data = clean_data, aes(x = School_Type, y = Exam_Score))+
+  geom_col(color = "darkblue")+
+  labs(x = "School Type", y = "Exam Score")+
+  ggtitle("Exam Scores For Each Score", 
+          subtitle = "An investigation to which school has the highest performers")
+```
+### Colcustion: Public Schools have more high performers than private schools.
+
+## Developing the Exam Score Prediction model
+```{r} 
+## splitting the data
+
+numeric_data = clean_data[c(1,2,6,7,10,15,20)]
+
+split <- sample.split(numeric_data, SplitRatio = 0.8)
+split
+```
+```{r}
+## defining the training and testing datasets
+
+training = subset(numeric_data, split == TRUE)
+testing = subset(numeric_data, split == FALSE)
+```
+
+
+```{r}
+## implementing the model
+
+model_lm <- lm(Exam_Score~., data = training)
+summary(model_lm)
+```
+## Interpretation: 
+
+##### From the above output, only the sleep hours don't affect exam scores significantly. The other dependent variables have a significant impact on the exam score.
+
+##### The null hypothesis is rejected since the p-value is less than the degrees of freedom, thus the dependent varibales do predict the exam score effectively.
+
+##Conclusion: The model has an accuracy of 80% thus making it a good predictor of the students' exam score.
+
+
+## Developing the R shiny App for the above model and analysis
+```{r}
+## loading the R shiny app library
+
+library(shiny)
+library(caret)
+```
+
+## Desigining the R shiny app
+```{r}
+# Define UI for the Shiny app
+
+ui <- fluidPage(
+  titlePanel("Student Exam Score Analysis and Prediction"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      fileInput("file", "Upload CSV File", accept = ".csv"),
+      selectInput("x_var", "Select X Variable:", choices = NULL),
+      selectInput("y_var", "Select Y Variable:", choices = NULL),
+      selectInput("chart_type", "Choose Chart Type:", 
+                  choices = c("Histogram", "Boxplot", "Scatterplot", "Correlation Matrix")),
+      actionButton("analyze", "Generate Chart"),
+      hr(),
+      h3("Prediction Section"),
+      numericInput("hours_studied", "Hours Studied:", value = 5, min = 0, max = 24),
+      numericInput("attendance", "Attendance (%):", value = 80, min = 0, max = 100),
+      actionButton("predict", "Predict Exam Score")
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Visualization", plotOutput("plot")),
+        tabPanel("Summary", verbatimTextOutput("summary")),
+        tabPanel("Prediction", verbatimTextOutput("prediction"))
+      )
+    )
+  )
+)
+
+# Define the server logic
+server <- function(input, output, session) {
+  data <- reactiveVal(NULL)
+  
+  observeEvent(input$file, {
+    req(input$file)
+    df <- read.csv(input$file$datapath)
+    data(df)
+    
+    updateSelectInput(session, "x_var", choices = names(df))
+    updateSelectInput(session, "y_var", choices = names(df))
+  })
+  
+  output$summary <- renderPrint({
+    req(data())
+    summary(data())
+  })
+  
+  output$plot <- renderPlot({
+    req(data())
+    df <- data()
+    
+    if (input$chart_type == "Histogram") {
+      ggplot(df, aes_string(input$x_var)) + 
+        geom_histogram(binwidth = 10, fill = "blue", color = "white") +
+        theme_minimal()
+    } else if (input$chart_type == "Boxplot") {
+      ggplot(df, aes_string(y = input$x_var)) + 
+        geom_boxplot(fill = "blue", color = "black") +
+        theme_minimal()
+    } else if (input$chart_type == "Scatterplot") {
+      req(input$y_var)
+      ggplot(df, aes_string(x = input$x_var, y = input$y_var)) + 
+        geom_point(color = "blue", size = 3) +
+        theme_minimal()
+    } else if (input$chart_type == "Correlation Matrix") {
+      corrplot(cor(df[sapply(df, is.numeric)]), method = "circle")
+    }
+  })
+  
+  output$prediction <- renderPrint({
+    req(data())
+    df <- data()
+    
+    model <- train(Exam_Score ~ Hours_Studied + Attendance, data = df, method = "lm")
+    prediction <- predict(model, 
+                          newdata = data.frame(Hours_Studied = input$hours_studied, 
+                                               Attendance = input$attendance))
+    paste("Predicted Exam Score:", round(prediction, 2))
+  })
+}
+```
+
+
+## Running the R shiny Application
+```{r}
+# Run the application 
+
+shinyApp(ui = ui, server = server)
+```
+
