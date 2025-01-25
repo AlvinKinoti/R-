@@ -1,0 +1,140 @@
+---
+title: "Restaurant Revenue Prediction Project"
+author: "Alvin"
+date: "2025-01-25"
+output: word_document
+---
+
+## Loading the dataset
+```{r}
+df <- read.csv("D:/others/Personal Projects 2/Practice Files July 2024/Restaurant Revenue Prediction Dataset/restaurant_data.csv")
+
+head(df)
+```
+## Loading the required libraries
+```{r}
+library(dplyr)
+library(tidyverse)
+library(caTools)
+library(corrplot)
+```
+## Exploring the dataset
+```{r}
+## shape of the dataset
+dim(df)
+```
+```{r}
+## summary statistics 
+
+summary(df)
+```
+## Data Wrangling
+```{r}
+# checking for any null values
+
+sum(is.na(df))
+```
+```{r}
+# checking for any duplicates
+
+sum(duplicated(df))
+```
+```{r}
+# dealing with outliers
+
+df1 <- df[! df$Revenue %in% boxplot.stats(df$Revenue)$out, ]
+dim(df1)
+```
+```{r}
+# outliers removed 
+
+8368 - 8266
+```
+## Data Mining
+## 1. KPIs
+```{r}
+# Average Revenue
+
+data <- df1
+
+mean(data$Revenue)
+```
+```{r}
+# No of restaurants
+
+length(data$Name)
+```
+
+```{r}
+# total marketing budget
+
+sum(data$Marketing.Budget)
+```
+```{r}
+## average rating
+
+mean(data$Rating)
+```
+```{r}
+# Average Ambience Score 
+
+mean(data$Ambience.Score)
+```
+## 1. Univariate Analysis
+```{r}
+## Revenue Distribution
+
+ggplot(data = data, aes(x = Revenue))+
+  geom_density(show.legend = "Location", color = "darkgrey", fill = "maroon")+
+  labs(X= "Revenue") +
+  ggtitle("Revenue Distribution")
+```
+```{r}
+## ratings distribution
+
+ggplot(data = data, aes(x = Rating))+
+  geom_histogram(binwidth = 0.3, fill = "blue", color = "black")+
+  labs(X= "Ratings")+
+  ggtitle("Ratings Distribution")
+```
+## 2. Bivariate Analysis
+```{r}
+## Revenue per location
+
+ggplot(data = data, aes(x =  Location, y = Revenue))+
+  geom_col(fill = "darkgreen")+
+  labs(x = "Locations", y = "Revenue")+
+  ggtitle("Revenue Generated Per Location")
+```
+```{r}
+## Social Media Followers per Location
+
+ggplot(data = data, aes(y =  Location, x = Social.Media.Followers))+
+  geom_col(fill = "darkgreen")+
+  labs(y = "Locations", x = "Social Media Followers")+
+  ggtitle("Revenue Generated Per Location")
+```
+## Developing the Prediction Model
+```{r}
+## splitting the data
+
+numeric_data = data[-c(1,2,3,14)]
+
+split <- sample.split(numeric_data, SplitRatio = 0.75)
+split
+```
+```{r}
+## dividing the data into training and testing datasets
+
+training = subset(numeric_data, split == TRUE)
+testing = subset(numeric_data, split == FALSE)
+```
+
+```{r}
+## Implementing the model
+
+model_lm <- lm(Revenue~., data =  training)
+summary(model_lm)
+```
+## Conclusion:
+1. The p-value is less than the confidence level thus we reject the null hypothesis and the model has a 95% accuracy therefore making it an excellent predictor of restaurant revenue. 
